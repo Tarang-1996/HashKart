@@ -1,34 +1,17 @@
 package com.hashkart.inventory.service.model;
 
+import java.util.Optional;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+public enum Category {
+	GROCERY, TOYS, CLOTHING, GADGETS, FOOTWEAR, BEAUTY, APPLIANCES, SPORTS;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.hashkart.inventory.service.model.Product;
+	public static Optional<Category> get(String categoryValue) {
+		for (Category category : Category.values()) {
+			if (categoryValue.equalsIgnoreCase(category.toString())) {
+				return Optional.of(category);
+			}
+		}
+		return Optional.empty();
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-
-@Entity
-@Table(name = "categories")
-@Data
-@NoArgsConstructor
-public class Category {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
-    @Column(name = "category_name")
-    private  String categoryName;
-
-    private  String description;
-
-   
+	}
 }

@@ -1,13 +1,15 @@
 package com.hashkart.inventory.service.services;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.hashkart.inventory.service.exceptions.ProductNotExistsException;
+import com.hashkart.inventory.service.exceptions.NoCategoryFoundException;
 import com.hashkart.inventory.service.model.Category;
 import com.hashkart.inventory.service.model.Product;
 import com.hashkart.inventory.service.repository.ProductRepository;
@@ -17,55 +19,98 @@ public class ProductService {
 	@Autowired
 	ProductRepository productRepository;
 
-	public void createProduct(Product product, Category category) {
-		Product product1 = new Product();
-		product1.setDescription(product1.getDescription());
-		product1.setName(product1.getName());
-		product1.setCategory(product1.getCategory());
-		product1.setPrice(product1.getPrice());
-		productRepository.save(product1);
+	@PostConstruct
+	public void init() {
+		productRepository.save(Product.builder().name("Rice").price(50.0).category(Category.GROCERY).quantity(5)
+				.userRating(3.8).build());
+		productRepository.save(Product.builder().name("Wheat").price(45.0).category(Category.GROCERY).quantity(10)
+				.userRating(2.8).build());
+		productRepository.save(Product.builder().name("Iphone").price(53599.0).category(Category.GADGETS).quantity(2)
+				.userRating(4.1).build());
+		productRepository.save(Product.builder().name("Shoes").price(1500.0).category(Category.FOOTWEAR).quantity(6)
+				.userRating(4.3).build());
+		productRepository.save(Product.builder().name("Sandals").price(1200.0).category(Category.FOOTWEAR).quantity(8)
+				.userRating(4.0).build());
+		productRepository.save(Product.builder().name("Shirt").price(1400.0).category(Category.CLOTHING).quantity(8)
+				.userRating(3.9).build());
+		productRepository.save(Product.builder().name("Pants").price(1600.0).category(Category.CLOTHING).quantity(8)
+				.userRating(4.2).build());
+		productRepository.save(Product.builder().name("Jackets").price(2100.0).category(Category.CLOTHING).quantity(4)
+				.userRating(3.3).build());
 	}
 
-	public Product getProduct(Product product) {
-		Product product1 = new Product();
-		product1.setDescription(product1.getDescription());
-		product1.setName(product1.getName());
-		product1.setCategory(product1.getCategory());
-		product1.setPrice(product1.getPrice());
-		product1.setId(product1.getId());
-		return product1;
+	public List<Product> getAll() {
+		return productRepository.findAll();
 	}
 
-	public List<Product> getAllProducts() {
-		List<Product> allProducts = productRepository.findAll();
+	public Optional<Product> getProductById(Integer productId) {
+		return productRepository.findById(productId);
+	}
 
-		List<Product> products = new ArrayList<>();
-		for (Product product : allProducts) {
-			products.add(getProduct(product));
+	public List<Product> getProductByCategory(String categoryValue) throws NoCategoryFoundException {
+
+		Optional<Category> OpCategory = Category.get(categoryValue);
+		if (!OpCategory.isPresent()) {
+			throw new NoCategoryFoundException("No Such Category Found"+categoryValue);
 		}
-		return products;
+		return productRepository.findAllByCategory(OpCategory.get());
 	}
 
-	public void updateProduct(Product product, Integer productId) throws Exception {
-		Optional<Product> optionalProduct = productRepository.findById(productId);
-		// throw an exception if product does not exists
-		if (!optionalProduct.isPresent()) {
-			throw new Exception("product not present");
-		}
-		Product product1 = optionalProduct.get();
-		product1.setDescription(product.getDescription());
-		product1.setName(product.getName());
-		product1.setPrice(product.getPrice());
-		product1.setQuantity(product.getQuantity());
-		product1.setCategory(product.getCategory());
-		productRepository.save(product1);
+	public List<Product> getProductByProductName(String productName) {
+		return productRepository.findAllByNameContainingIgnoreCase(productName);
 	}
 
-	public Product findById(Integer productId) throws ProductNotExistsException {
-		Optional<Product> optionalProduct = productRepository.findById(productId);
-		if (optionalProduct.isEmpty()) {
-			throw new ProductNotExistsException("product id is invalid: " + productId);
+	public List<Product> getSortedProductByRating(String sortOrder) {
+		if (sortOrder.equalsIgnoreCase("ASC")) {
+			return productRepository.findAll().stream().sorted((o1, o2) -> {
+				if (o1.getUserRating() > o2.getUserRating()) {
+					return 1;
+				} else if (o1.getUserRating() < o2.getUserRating()) {
+					return -1;
+				}
+				return 0;
+			}).collect(Collectors.toList());
+		} else {
+			return productRepository.findAll().stream().sorted((o1, o2) -> {
+				if (o1.getUserRating() > o2.getUserRating()) {
+					return -1;
+				} else if (o1.getUserRating() < o2.getUserRating()) {
+					return 1;
+				}
+				return 0;
+			}).collect(Collectors.toList());
 		}
-		return optionalProduct.get();
+	}
+
+	public List<Product> getSortedProductByPrice(String sortOrder) {
+		if (sortOrder.equalsIgnoreCase("ASC")) {
+			return productRepository.findAll().stream().sorted((o1, o2) -> {
+				if (o1.getPrice() > o2.getPrice()) {
+					return 1;
+				} else if (o1.getPrice() < o2.getPrice()) {
+					return -1;
+				}
+				return 0;
+			}).collect(Collectors.toList());
+		} else {
+			return productRepository.findAll().stream().sorted((o1, o2) -> {
+				if (o1.getPrice() > o2.getPrice()) {
+					return -1;
+				} else if (o1.getPrice() < o2.getPrice()) {
+					return 1;
+				}
+				return 0;
+			}).collect(Collectors.toList());
+		}
+	}
+
+	public List<Product> getFilteredProductByRating(final Double start, final Double end) {
+		return productRepository.findAll().stream().filter(i -> i.getUserRating() > start && i.getUserRating() <= end)
+				.collect(Collectors.toList());
+	}
+
+	public List<Product> getFilteredProductByPrice(final Double start, final Double end) {
+		return productRepository.findAll().stream().filter(i -> i.getPrice() > start && i.getPrice() <= end)
+				.collect(Collectors.toList());
 	}
 }

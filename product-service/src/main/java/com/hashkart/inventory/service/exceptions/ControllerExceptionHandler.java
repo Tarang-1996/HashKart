@@ -20,6 +20,9 @@ public class ControllerExceptionHandler {
 	
 	@Value(value = "${data.exception.message3}")
 	private String message3;
+	
+	@Value(value = "${data.exception.message3}")
+	private String message4;
 
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public ResponseEntity<ErrorMessage> resourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
@@ -52,5 +55,16 @@ public class ControllerExceptionHandler {
 				request.getDescription(false));
 
 		return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+	}
+	
+	@ExceptionHandler(NoCategoryFoundException.class)
+	public ResponseEntity<ErrorMessage> noCategoryFoundException(NoCategoryFoundException ex, WebRequest request) {
+		ErrorMessage message = new ErrorMessage(
+				HttpStatus.NOT_FOUND.value(),
+				new Date(),
+				message4,
+				request.getDescription(false));
+
+		return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
 	}
 }
