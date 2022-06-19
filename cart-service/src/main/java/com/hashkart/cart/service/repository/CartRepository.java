@@ -1,10 +1,13 @@
 package com.hashkart.cart.service.repository;
-import com.hashkart.cart.service.model.Cart;
+
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import com.hashkart.cart.service.model.Cart;
 
+@Repository
 public interface CartRepository extends JpaRepository<Cart, Integer> {
-
-//    List<Cart> findAllByUserOrderByCreatedDateDesc(User user);
+    Optional<Cart> findByUserId(Integer userId);
 }
