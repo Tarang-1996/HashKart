@@ -12,7 +12,7 @@ import com.hashkart.cart.service.model.Checkout;
 import com.hashkart.cart.service.model.Item;
 import com.hashkart.cart.service.repository.CartRepository;
 import com.hashkart.cart.service.repository.ItemRepository;
-import com.hashkart.cart.service.clients.ProductService;
+import com.hashkart.cart.service.clients.InventoryService;
 import com.hashkart.cart.service.entities.Product;
 
 
@@ -26,7 +26,7 @@ public class CartServices {
     ItemRepository itemRepository;
 
     @Autowired
-    ProductService productService;
+    InventoryService productService;
 
     public List<Cart> getAllCarts() {
         return cartRepository.findAll();
